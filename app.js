@@ -12,7 +12,7 @@ var bodyParser = require('body-parser');
 
 // DATA BASE CONNECTION
 var mongoose = require('mongoose');
-mongoose.connect('127.0.0.1:27017/wholadb');
+mongoose.connect('mongodb://whola:wholaDBPass86@ds161306.mlab.com:61306/wholadb');
 
 var session = require('express-session');
 var passport = require('passport');
