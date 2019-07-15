@@ -7,23 +7,36 @@ var lotSchema = new mongoose.Schema({
   acqPrice: { type: Number, required: true },
   salePrice: { type: Number, required: true },
   units: { type: Number, required: true },
-  expDate: { type: Date, required: true },
+  expDate: { type: Date },
   store: { type: [ mongoose.Schema.Types.ObjectId ], ref: "Store", required: true },
-  date: { type: Date, default: Date.now },
+  date: { type: Date, default: Date.now, required: true },
   active: { type: Boolean, required: true, default: false }
 });
 
 var Lot = mongoose.model('Lot', lotSchema);
 
-lotSchema.methods.createLot = function (lot, res) {
+// CREATE NEW LOT
+lotSchema.methods.newLot = function (lotName, acqPrice, salePrice, units, expDate, store) {
+
+  var lot = new Lot({
+    name: lotName, 
+    acqPrice: acqPrice,
+    salePrice: salePrice,
+    units: units,
+    expDate: expDate,
+    store: store,
+    active: false,
+  });
+
+  return lot.save();
 
 }
 
-lotSchema.methods.setLotUnits = function (lot, units, res) {
+lotSchema.methods.setLotUnits = function (lotId, units) {
 
 }
 
-lotSchema.methods.closeLot = function (lot, res) {
+lotSchema.methods.closeLot = function (lotId) {
 
 }
 

@@ -12,6 +12,11 @@ var merchantClientSchema = new mongoose.Schema({
 
 var MerchantClient = mongoose.model('MerchantClient', merchantClientSchema);
 
+// GET MERCHANT CLIENTS
+merchantClientSchema.methods.getMerchantClients = function(merchantId) {
+  return MerchantClient.find({merchantId: merchantId});
+}
+
 // CHECK IF MERCHANT CLIENT EXIST METHOD
 merchantClientSchema.methods.checkMerchantClient = function (userId) {
 

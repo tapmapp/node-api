@@ -1,18 +1,23 @@
 var express = require('express');
 
-var router = express.Router();
-var csrf = require('csurf');
 var path = require('path');
-var hbs = require('hbs');
-var hbsutils = require('hbs-utils')(hbs);
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var config = require('./config/env');
+
+var PORT = process.env.PORT || config.PORT;
+process.env.SECRET = config.SECRET;
+process.env.SOCKET_PORT = config.SOCKET_PORT;
+
 // DATA BASE CONNECTION
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://wholaUserDB:wholaUserDB@ds161306.mlab.com:61306/wholadb');
+mongoose.connect('mongodb://127.0.0.1:27017/wholadb');
+
+// test@as.com
+// 11111111
 
 var session = require('express-session');
 var passport = require('passport');
@@ -42,8 +47,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
 app.use(logger('dev'));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(cookieParser());
 app.use(session({secret: 'mysupersecret', resave: false, saveUnitialized: false }))
 app.use(flash());
@@ -52,8 +57,12 @@ app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    );
     next();
 });
 

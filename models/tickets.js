@@ -17,14 +17,16 @@ var ticketSchema = new mongoose.Schema({
 
 var Ticket = mongoose.model('Ticket', ticketSchema);
 
-ticketSchema.methods.getTickets = function (merchandId, fromDate, toDate) {
+// GET MERCHANT TICKETS
+ticketSchema.methods.getTickets = function (merchantId) {
 
   return Ticket.find().where({ 
-    merchantId: merchandId, 
+    merchantId: merchantId, 
+    /*
     date: {
       $gte: new Date(fromDate),
       $lt: new Date(toDate)
-    }
+    }*/
   }).populate({
     path:'saleId',
     model:'Sale',
@@ -50,6 +52,64 @@ ticketSchema.methods.getTickets = function (merchandId, fromDate, toDate) {
 
 }
 
+// GET CLIENT TICKETS
+ticketSchema.methods.getClientTickets = function (userId, merchantId) {
+
+  return Ticket.find().where({ 
+    merchantId: merchantId, 
+    userId: userId,
+  }).populate({
+    path:'saleId',
+    model:'Sale',
+    populate: [{
+      path: 'merchantProductId',
+      model: 'MerchantProduct',
+      populate: {
+        path: 'category',
+        model: 'Category'
+      }
+    },
+    {
+      path: 'productId',
+      model: 'Product'
+    }]
+  }).populate({
+    path:'storeId',
+    model:'Store'
+  }).sort({date:-1});
+
+}
+
+// GET TICKET BY ID
+ticketSchema.methods.getTicket = function (ticketId) {
+
+  return Ticket.findOne({ 
+    _id: ticketId,
+  }).populate({
+    path:'saleId',
+    model:'Sale',
+    populate: [{
+      path: 'merchantProductId',
+      model: 'MerchantProduct',
+      populate: {
+        path: 'category',
+        model: 'Category'
+      }
+    },
+    {
+      path: 'productId',
+      model: 'Product'
+    }]
+  }).populate({
+    path:'storeId',
+    model:'Store'
+  }).populate({
+    path:'userId',
+    model:'User',
+  }).exec();
+
+}
+
 ticketSchema.methods.newTicket = function (userId, saleId, merchantId, storeId, totalAmount) {
 
   var ticket = new Ticket({
@@ -58,7 +118,7 @@ ticketSchema.methods.newTicket = function (userId, saleId, merchantId, storeId, 
     storeId: storeId,
     totalAmount: totalAmount,
     userId: userId,
-    date: new Date()
+    method: 'cash',
   });
 
   return ticket.save();

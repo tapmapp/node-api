@@ -10,7 +10,7 @@ var categorySchema = new mongoose.Schema({
 var Category = mongoose.model('Category', categorySchema);
 
 // NEW CATEGORY
-categorySchema.methods.newCategory = function (merchantId, categoryName) {
+categorySchema.methods.addCategory = function (merchantId, categoryName) {
 
   var category = new Category({
     merchant: merchantId,

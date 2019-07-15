@@ -42,7 +42,7 @@ userSchema.methods.createUser = function (email, name, lastName, address, postal
 
 userSchema.methods.userInfo = function(userId) {
 
-  return User.find().where({ _id: userId });
+  return User.findOne({ _id: userId }).exec();
 
 }
 

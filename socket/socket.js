@@ -2,8 +2,7 @@ var io = null;
 
 exports.initialize = function(server) {
 
-    const PORT = 3030;
-    var io = require('socket.io')(PORT);
+    var io = require('socket.io').listen(server);
     
     io.on('connection', function(socket) {
        

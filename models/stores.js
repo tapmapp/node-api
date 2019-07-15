@@ -16,10 +16,10 @@ var storeSchema = new mongoose.Schema({
 
 var Store = mongoose.model('Store', storeSchema);
 
-// NEW MERCHANT SALE METHOD
+// GET MERCHANT STRORES
 storeSchema.methods.storesInfo = function (merchantId) {
 
-  return Store.find({ 'merchantId' : merchantId });
+  return Store.find({ merchantId : merchantId });
 
 }
 

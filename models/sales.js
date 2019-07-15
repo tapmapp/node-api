@@ -20,15 +20,11 @@ var saleSchema = new mongoose.Schema({
 
 var Sale = mongoose.model('Sale', saleSchema);
 
-saleSchema.methods.getSales = function (merchandId, fromDate, toDate) {
+saleSchema.methods.getSales = function (merchantId) {
 
   return Sale.find().where({ 
-    merchantId: merchandId, 
-    date: {
-      $gte: new Date(fromDate),
-      $lt: new Date(toDate)
-    }
-  //'storeId': ['59bd3ea4c2077919a442c3f0', '59bd3ebbc71a7119b2a9821d']
+    merchantId: merchantId, 
+    storeId: ['59bd3ea4c2077919a442c3f0', '59bd3ebbc71a7119b2a9821d']
   }).populate({
       path:'productId',
       model:'Product'

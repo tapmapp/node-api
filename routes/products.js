@@ -1,76 +1,80 @@
 var express = require('express');
 var router = express.Router();
+var multer = require('multer');
 
-var Brand = require('../models/brands');
+// MODELS
 var Lot = require('../models/lots');
 var MerchantProduct = require('../models/merchantProducts');
 var Product = require('../models/products');
-var Stores = require('../models/stores');
+var checkAuth = require('../middleware/check.auth');
 
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, './public/img/products/');
+  }, 
+  filename: function(req, file, cb) {
 
-/* GET MERCHANT PRODUCTS */
-router.get('/merchant-products', function(req, res, next) {
+    // DELETE WHITE SPACES
+    file.originalname = file.originalname.replace(/ /g,'');
 
-  res.writeHead(200, {"Content-Type": "application/json"});
-  
-  MerchantProduct.find().where('merchant', '5990895d94c8cd56cee5c941').populate({
-        path:'category',
-        model:'Category'
-    }).populate({
-        path:'product',
-        model:'Product'
-    }).populate({
-        path:'lot',
-        model:'Lot'
-    }).exec(function (err, merchantProducts) {
-      
-    var products = [];
-    var lots = [];
-
-    for(var merchantProduct in merchantProducts) {
-
-      products.push({
-        _id: merchantProducts[merchantProduct]._id,
-        productId: merchantProducts[merchantProduct].product._id,
-        name: merchantProducts[merchantProduct].product.name,
-        brand: merchantProducts[merchantProduct].product.brand,
-        brandName: merchantProducts[merchantProduct].product.brandName,
-        size: merchantProducts[merchantProduct].product.size,
-        img: merchantProducts[merchantProduct].product.img,
-        category: merchantProducts[merchantProduct].category,
-        lot: merchantProducts[merchantProduct].lot
-      });
-      
-    }
-
-    // RETURN PRODUCT
-    var json = JSON.stringify(products);
-    res.end(json);
-
-  });
-  
+    cb(null, new Date().getTime() + '-' + file.originalname);
+  }
 });
 
+var upload = multer({ storage: storage });
 
 /* ADD PRODUCT */
-router.post('/add', function(req, res, next) {
+router.post('/new-product', checkAuth, function(req, res, next) {
+
+  var name = req.body.name;
+  var brandId = req.body.brandId;
+  var brandName = req.body.brandName;
+  var size = req.body.size;
+  var img = req.body.img;
   
-  var product = new Products({ 
-    name: products[i].name,
-    brand: products[i].brand,
-    img: products[i].category
+  var newProduct = Product.schema.methods.addProdutct(name, brandId, brandName, size, img);
+  newProduct.then(newProduct => {
+    
+    // RETURN MERCHANT INFO
+    res.status(200).json({
+      response: {
+          code: 200,
+          message: 'New product created',
+          status: '',
+      },
+      result: newProduct
+    });
+
+  }).catch(err => {
+
+    // HANDLE ERROR
+    res.status(err.statusCode || 500).json(err);
+
   });
 
-  product.save(function (err) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log('Product Done!');
+});
+
+/* UPLOAD PRODUCT IMAGE */
+router.post('/file-upload', checkAuth, upload.single('product-image'), function(req, res, next) {
+
+  // RETURN MERCHANT INFO
+  res.status(200).json({
+    response: {
+        code: 200,
+        message: 'Product image uploaded correctly',
+        status: '',
+    },
+    result: {
+      fileName: req.file.filename,
+      destination: req.file.destination,
     }
   });
 
-  res.end();
+});
 
+// GET PRODUCT IMAGE
+router.get('/images/:fileProductName', function(req, res, next) {
+  res.sendfile(`/img/products/${req.params.fileProductName}`, {root: './public'});
 });
 
 /* ADD MERCHANT PRODUCT */
@@ -97,7 +101,7 @@ router.post('/add-merchant-product', function(req, res, next) {
   });
 
   var merchantProduct = new MerchantProduct({
-    merchant: '5990895d94c8cd56cee5c941',
+    merchant: req.body.merchantId,
     product: req.body.product._id,
     category: req.body.product.category,
     lot: lot._id

@@ -5,7 +5,8 @@ var Category = require('./categories');
 
 var merchantCategorySchema = new mongoose.Schema({
   merchant: { type: mongoose.Schema.Types.ObjectId, ref: "Merchant" },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" }
+  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+  items: { type: Number, default: 0, required: true },
 });
 
 var MerchantCategories = mongoose.model('MerchantCategory', merchantCategorySchema);

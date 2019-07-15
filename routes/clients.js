@@ -1,40 +1,74 @@
 var express = require('express');
+var checkAuth = require('../middleware/check.auth');
 var router = express.Router();
 
 var MerchantClient = require('../models/merchantClients');
 var Sale = require('../models/sales');
 var User = require('../models/users');
 
-// CLIENT INFO
-router.post('/client-info', function(req, res, next) {
+// GET MERCHANT CLIENTS
+router.get('/merchant-clients/:merchantId', (req, res, next) => {
+
+  var merchantClients = MerchantClient.schema.methods.getMerchantClients(req.params.merchantId);
+  merchantClients.then((merchantClients) => {
+
+    // RETURN MERCHANT CLIENTS
+    res.status(200).json({
+      response: {
+          code: 200,
+          message: 'Merchant clients found',
+          status: '',
+      },
+      result: {
+          merchantClients: merchantClients
+      }
+    });
+
+  }).catch(err => {
+
+    // ERROR RESPONSE
+    res.status(err.statusCode || 500).json(err);
+
+  });
+
+});
+
+// CLIENT DETAILS
+router.get('/:clientId', checkAuth, (req, res, next) => {
   
-  var userInfo = User.schema.methods.userInfo(req.body.clientId);
-  userInfo.then(function(userInfo) {
+  var clientDetails = User.schema.methods.userInfo(req.params.clientId);
+  clientDetails.then(clientDetails => {
 
-    // RETURN USER INFO
-    var json = JSON.stringify(userInfo);
-    res.end(json);
+    // RETURN MERCHANT CLIENTS
+    res.status(200).json({
+      response: {
+          code: 200,
+          message: 'Merchant clients found',
+          status: '',
+      },
+      result: clientDetails,
+    });
 
-  }, function(err){
+  }).catch(err => {
 
-    // HANDLE ERROR HERE
-    res.end(err);
+    // ERROR RESPONSE
+    res.status(err.statusCode || 500).json(err);
 
   });
 
 });
 
 // CREATE NEW USER
-router.post('/new-user', function(req, res, next) {
+router.post('/new-user', (req, res, next) => {
 
   //email, name, lastName, address, postalCode, city, country, dateBirth, genre, password, created, status, img
   var createUser = User.schema.methods.createUser('test@email.com', 'Jacobo', 'Roca', 'Pilar Cavero', '28043', 'Madrid', 'Spain', '12-10-1987', 'Male', 'password', new Date(), false, 'jacobo.jpg');
-  createUser.then(function(){
+  createUser.then(() => {
 
     // NEW USER CREATED  
     res.end(true);
   
-  }, function(err){
+  }).catch(err => {
 
     // HANDLE ERROR HERE
     res.end(err);
@@ -42,6 +76,11 @@ router.post('/new-user', function(req, res, next) {
   });
   
 
+});
+
+// GET CLIENT IMAGE
+router.get('/images/:fileClientName', (req, res, next) => {
+  res.sendfile(`/img/users/${req.params.fileClientName}`, {root: './public'});
 });
 
 module.exports = router;
